@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Redirecting to FastFacts App</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          sans-serif;
+        text-align: center;
+        padding: 40px 20px;
+        background-color: #f8f9fa;
+      }
+      .container {
+        max-width: 500px;
+        margin: 0 auto;
+        background-color: white;
+        border-radius: 10px;
+        padding: 30px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+      h1 {
+        color: #333;
+        font-size: 24px;
+      }
+      p {
+        color: #666;
+        margin-bottom: 30px;
+      }
+      .button {
+        display: inline-block;
+        background-color: #4f46e5;
+        color: white;
+        text-decoration: none;
+        padding: 12px 24px;
+        border-radius: 6px;
+        font-weight: 500;
+      }
+      .loading {
+        margin-top: 20px;
+        color: #888;
+      }
+    </style>
+    <script>
+      // Function to parse URL parameters
+      function getUrlParams() {
+        const params = {};
+        const queryString = window.location.search.substring(1);
+        const hashString = window.location.hash.substring(1);
+
+        // Parse query string
+        queryString.split("&").forEach((pair) => {
+          const [key, value] = pair.split("=");
+          if (key) params[key] = decodeURIComponent(value || "");
+        });
+
+        // Parse hash string (for access_token, etc.)
+        hashString.split("&").forEach((pair) => {
+          const [key, value] = pair.split("=");
+          if (key) params[key] = decodeURIComponent(value || "");
+        });
+
+        return params;
+      }
+
+      // Function to redirect to the app
+      function redirectToApp() {
+        const params = getUrlParams();
+        console.log("Parsed params:", params);
+
+        // Prepare app URL
+        let appUrl = "fastfacts://verify";
+
+        // Check for access token in URL hash
+        if (params.access_token && params.refresh_token) {
+          appUrl = `fastfacts://verify?access_token=${params.access_token}&refresh_token=${params.refresh_token}`;
+        }
+        // Check for email confirmation
+        else if (
+          params.type === "email_confirmation" ||
+          params.type === "signup" ||
+          params.token
+        ) {
+          appUrl = `fastfacts://verify?email_confirmed=true&token=${
+            params.token || ""
+          }`;
+        }
+
+        // Log for debugging
+        console.log("Redirecting to:", appUrl);
+
+        // Set timeout to allow seeing the page briefly
+        setTimeout(() => {
+          window.location.href = appUrl;
+
+          // Show manual button after a delay in case auto-redirect doesn't work
+          setTimeout(() => {
+            document.getElementById("loading").style.display = "none";
+            document.getElementById("manual").style.display = "block";
+          }, 1500);
+        }, 500);
+      }
+
+      // Run when page loads
+      window.onload = redirectToApp;
+    </script>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Redirecting to FastFacts App</h1>
+      <p>Your account has been verified and you'll be redirected to the app.</p>
+
+      <div id="loading" class="loading">
+        Redirecting automatically... <br />
+        <small
+          >(If you're not redirected, your browser might be blocking the
+          redirect)</small
+        >
+      </div>
+
+      <div id="manual" style="display: none">
+        <p>If you weren't redirected automatically:</p>
+        <a href="fastfacts://verify" class="button">Open FastFacts App</a>
+      </div>
+    </div>
+  </body>
+</html>
